@@ -1,42 +1,46 @@
 var socket = io();
 
-// se recuperan parámetros de la url
 var params = new URLSearchParams(window.location.search);
+
 if (!params.has("nombre") || !params.has("sala")) {
   window.location = "index.html";
-  throw new Error("El nombre y sala son necesaios");
+  throw new Error("El nombre y sala son necesarios");
 }
 
-// se crea el usuario según los parámetros de la url. Sólo se usa en la conexión
 var usuario = {
   nombre: params.get("nombre"),
   sala: params.get("sala"),
 };
 
-// Conexión al servidor, se reciben los usuarios conectados
 socket.on("connect", function () {
   console.log("Conectado al servidor");
+
   socket.emit("entrarChat", usuario, function (resp) {
-    console.log("Usuarios conectados", resp);
+    //console.log("Usuarios conectados", resp);
+    renderizarUsuarios(resp);
   });
 });
 
-// Desconexión del servidor
+// escuchar
 socket.on("disconnect", function () {
-  console.log("Perdimos conexión con el servidor");
+  renderizarUsuarios(resp);
 });
 
-// Escuchar el mensaje que se envió a todos
+// Escuchar información
 socket.on("crearMensaje", function (mensaje) {
   console.log("Servidor:", mensaje);
+  renderizarMensajes(mensaje, false);
+  scrollBottom();
 });
 
-// Escuchar la lista de personas tras la entrada o salida de un usuario
+// Escuchar cambios de usuarios
+// cuando un usuario entra o sale del chat
 socket.on("listaPersonas", function (personas) {
-  console.log(personas);
+  console.log("personas", personas);
+  renderizarUsuarios(personas);
 });
 
-// Escuchar mensajes privados
+// Mensajes privados
 socket.on("mensajePrivado", function (mensaje) {
-  console.log("Mensaje privado", mensaje);
+  console.log("Mensaje Privado:", mensaje);
 });

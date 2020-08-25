@@ -17,19 +17,26 @@ io.on("connection", (client) => {
     client.join(data.sala);
 
     let personas = usuarios.agregarPersona(client.id, data.nombre, data.sala);
-
+    console.log("data", data);
     client.broadcast
       .to(data.sala)
       .emit("listaPersonas", usuarios.getPersonasPorSala(data.sala));
-
+    client.broadcast
+      .to(data.sala)
+      .emit(
+        "crearMensaje",
+        crearMensaje("Administrador", `${data.nombre} se unió`)
+      );
     callback(usuarios.getPersonasPorSala(data.sala));
   });
 
   // Desconexión. Se envía mensaje a todos
-  client.on("crearMensaje", (data) => {
+  client.on("crearMensaje", (data, callback) => {
     let persona = usuarios.getPersona(client.id);
     let mensaje = crearMensaje(persona.nombre, data.mensaje);
     client.broadcast.to(persona.sala).emit("crearMensaje", mensaje);
+
+    callback(mensaje);
   });
 
   // mnsaje de desconexión a todos
